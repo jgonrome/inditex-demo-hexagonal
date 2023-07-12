@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>example-application</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.inditex.example</groupId>
