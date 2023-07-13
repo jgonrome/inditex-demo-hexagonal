@@ -16,6 +16,7 @@ public class PricesRepositoryImpl implements PricesRepository {
 
     private final PricesEntityMapper mapper;
 
+    @Override
     public List<Prices> findAll() {
         return mapper.map(jpaRepository.findAll());
     }

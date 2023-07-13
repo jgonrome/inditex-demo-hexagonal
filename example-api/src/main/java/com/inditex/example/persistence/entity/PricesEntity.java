@@ -1,5 +1,6 @@
 package com.inditex.example.persistence.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -25,7 +26,8 @@ import lombok.NoArgsConstructor;
 @IdClass(PricesEntityId.class)
 @Builder
 public class PricesEntity implements Serializable {
-	private static final long serialVersionUID = -7933490826392014404L;
+	@Serial
+    private static final long serialVersionUID = -7933490826392014404L;
 
     @Id
     @Column(name = "BRAND_ID")

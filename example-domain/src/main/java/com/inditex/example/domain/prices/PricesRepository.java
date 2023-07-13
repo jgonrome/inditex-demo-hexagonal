@@ -12,4 +12,5 @@ public interface PricesRepository {
 
 	List<Prices> getPrices(LocalDateTime appTime, long brandId, long productId);
 
+	List<Prices> findAll();
 }

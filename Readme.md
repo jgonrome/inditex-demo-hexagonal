@@ -11,10 +11,10 @@ La aplicación esta desarrollada usando Jva 17 + Spring como framework y usa un 
   - Repository como componente para la obtención de los datos solicitados.
   
 ## Ejecución
-Se podrá ejecutar usando maven. Es necesario que en el entorno este configurado en JAVA_HOME java 17.
+Se podrá ejecutar usando maven. Es necesario que en el entorno esté configurado con JAVA_HOME java 17. Se deberá lanzar desde la carpeta de example-api.
 
 ```cmd
-mvn spring-boot:run
+cd example-api > mvn spring-boot:run
 ```
 Los test se podrán ejecutar con:
 

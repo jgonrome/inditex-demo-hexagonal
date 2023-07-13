@@ -10,6 +10,12 @@
 		<version>3.0.4</version>
 	</parent>
 
+	<groupId>com.inditex.example</groupId>
+	<artifactId>inditex-demo-hexagonal</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>inditex-demo-hexagonal</name>
+	<description>Demo project based on hexagonal architecture for Spring Boot for Inditex as an example to access H2 Database leveraging Spring Data JPA. Example of test cases.</description>
+
 	<modules>
 		<module>example-domain</module>
 		<module>example-application</module>
@@ -44,12 +50,6 @@
 		</dependency>
 	</dependencies>
 
-	<groupId>com.inditex.example</groupId>
-	<artifactId>inditex-demo-hexagonal</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<name>inditex-demo-hexagonal</name>
-	<description>Demo project based on hexagonal architecture for Spring Boot for Inditex as an example to access H2 Database leveraging Spring Data JPA. Example of test cases.</description>
-
 	<properties>
 		<!-- Generic properties -->
 		<java.version>17</java.version>
@@ -59,6 +59,7 @@
 
 		<jacoco.version>0.8.8</jacoco.version>
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+
 	</properties>
 
 

@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.inditex.example.controller.dto.PricesDto;
 import com.inditex.example.controller.mapper.PricesDtoMapper;
 import com.inditex.example.application.PricesService;
-import com.inditex.example.domain.prices.Prices;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,7 +47,7 @@ public class PricesController {
      * @param productId
      * @return ResponseEntity<PricesDto>
      */
-    @Operation(summary = "Gets Prices in an specific time", description = "", tags = {"PRICES"})
+    @Operation(summary = "Gets Prices in an specific time", tags = {"PRICES"})
     @RequestMapping(value = "/prices",
                     produces = MediaType.APPLICATION_JSON_VALUE,
                     method = RequestMethod.GET)
