@@ -49,70 +49,84 @@ También se podrá usar la documentación generada con openAPI y accesible desde
 ![](./docs/openapi.png "Swagger UI")
 
 ## Revisión de Código
-El presente microservicio esta construido siguiendo los principales patrones de diseño (Creational, Structural y Behavioral Patterns) y el Patróm MVC. En el se pueden observar los siguientes componentes principales.
+El presente microservicio esta construido siguiendo los principales patrones de diseño (Creational, Structural y Behavioral Patterns) y el Patrón de arquitectura hexagonal. Por este motivo el proyecto está dividido en capas de Dominio, Aplicacion e Infraestructura (api en este caso), de modo que desde una capa mas interna no se accede a nada de una capa más externa, ni nada que haga referencia al framework utilizado. Para ello se incluye la clase de test LayerDependencyRulesTest en la cual se ArchUnit. 
+
+Para la implmentación de las capas se han usado módulos de maven.
+
+En el módulo (Infraestructura) example-api se pueden observar los siguientes componentes principales.
 
 ### Controlador
 Clase anotada con @RestController en la que se reciben las peticiones, se validan los parámetros se invoca la lógica de negocio implementada en un @Service y se devuelven los resultados en un objeto DTO.
 
  ```java
- 
 	@RestController
 	@RequestMapping("/api/v1")
 	@Validated
 	@RequiredArgsConstructor
 	public class PricesController {
 
-	private final PricesService pricesService;
-
-	private final PricesDtoMapper mapper;
-
-    @Operation(summary = "Gets Prices in an specific time", description = "", tags = {"PRICES"})
-    @RequestMapping(value = "/prices",
-                    produces = MediaType.APPLICATION_JSON_VALUE,
-                    method = RequestMethod.GET)
-    @ApiResponse(responseCode = "200", description = "Getted Prices",
-                 content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PricesDto.class))})
-    @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<PricesDto> getPrices(
-            @Parameter(name = "appTime", required = true, description = "Date of inquiry in format yyyy-MM-dd'T'HH:mm:ss.SSSXXX (2000-10-31T01:30:00.000-05:00)" )
-            @RequestParam(value = "appTime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime appTime,
-	        @Parameter(name = "brandId", required = true, description = "Brand Id" )
-	        @RequestParam(value = "brandId", required = true) @Min(value = 1, message = "Must be a positive Integer") long brandId,
-            @Parameter(name = "productId", required = true, description = "Product Id")
-            @RequestParam(value = "productId", required = true) @Min(value = 1, message = "Must be a positive Integer") long productId)  {
-	
+        private final PricesService pricesService;
+    
+        private final PricesDtoMapper mapper;
+    
+        @Operation(summary = "Gets Prices in an specific time", description = "", tags = {"PRICES"})
+        @RequestMapping(value = "/prices",
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                method = RequestMethod.GET)
+        @ApiResponse(responseCode = "200", description = "Getted Prices",
+                content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PricesDto.class))})
+        @ResponseStatus(value = HttpStatus.OK)
+        public ResponseEntity<PricesDto> getPrices(
+                @Parameter(name = "appTime", required = true, description = "Date of inquiry in format yyyy-MM-dd'T'HH:mm:ss.SSSXXX (2000-10-31T01:30:00.000-05:00)")
+                @RequestParam(value = "appTime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime appTime,
+                @Parameter(name = "brandId", required = true, description = "Brand Id")
+                @RequestParam(value = "brandId", required = true) @Min(value = 1, message = "Must be a positive Integer") long brandId,
+                @Parameter(name = "productId", required = true, description = "Product Id")
+                @RequestParam(value = "productId", required = true) @Min(value = 1, message = "Must be a positive Integer") long productId) {
+    
+        }
+    }
 ```
 
 Para el mapeo del objeto de salida se ha utilizado MapStruct el cual facilita en gran medida esta tarea.
 
-### Service
-Clase anotada con @Service en la que se invoca la lógica de negocio para lo cual se utliza un Repository
+Al tratarse de arquitectura hexagonal en este modulo se usa el servicio de la capa Applicacion (módulo example-appication), donde se implementa la logica de negocio. Al estar definida como una clase sin nada de Spring es necesario inyectarla en este creandola en:
 
- ```java
- 
-	@Service
-	@RequiredArgsConstructor
-	@Slf4j
-	public class PricesService { 
-	
-	private final PricesRepository pricesRepository;
-
-    public Optional<PricesEntity> getPrices(LocalDateTime appTime, long brandId, long productId)  {
-    	log.info("Starting Query... Parameters brandId {} productId {} appTime {}.", brandId, productId, appTime);
-    	
-		List<PricesEntity> pricesEntity = pricesRepository.getPrices(appTime, brandId, productId);
-		
-    	log.info("Ending Query...");
-    	
-    	return pricesEntity.stream().findFirst();
-     }
-
+```java
+@Configuration
+public class PricesConfiguration {
+    @Bean
+    public PricesService pricesService(PricesRepository pricesRepository) {
+        return new PricesService(pricesRepository);
+    }
+}
 ```
 
-Durante todo el desarrollo se utiliza lombok lo cual ayuda en gran medida para obtener Clean Code.
+Adicionalmente en este modulo se implementa el control de errores con una clase anotada con @ControllerAdvice.
 
-### Repository
-Interfaz anotada con @Repository en la que se accede a la BBDD en memoria H2, la cual es creada y cargada con datos en el arranque usando las propiedades siguientes:
+Para terminar en este módulo se implementa en acceso a los datos mediante un Component (PricesRepositoryImpl) que es la implementacion del repository definido en la capa Domain (PricesRepositoryImpl) y que adicionalmente usa SpringDataJPA definido en la interfaz PricesJpaRepository anotada con @Repository.
+
+```java
+    @RequiredArgsConstructor
+    @Component
+    public class PricesRepositoryImpl implements PricesRepository {
+        private final PricesJpaRepository jpaRepository;
+    
+        private final PricesEntityMapper mapper;
+    
+        @Override
+        public List<Prices> findAll() {
+            return mapper.map(jpaRepository.findAll());
+        }
+    
+        @Override
+        public List<Prices> getPrices(LocalDateTime appTime, long brandId, long productId) {
+            return mapper.map(jpaRepository.getPrices(appTime, brandId, productId));
+        }
+    
+    }
+```
+La creación y carga de la BBDD en memoria se configura con:
 
 ```property
 database: h2
@@ -120,17 +134,37 @@ spring.sql.init.schema-locations: classpath*:db/${database}/schema.sql
 spring.sql.init.data-locations: classpath*:db/${database}/data.sql
 ```
 
-La interfaz utilza un metodo @Query usando notación JPQL para obtener los datos deseados.
+### Service
+Clase definida en el módulo Application (example-application) en la que se invoca la lógica de negocio para lo cual se utiliza la interfaz Repository definida en la capa Domain de modo que en esta capa no se use nada de una capa superior ni de framework.
 
  ```java
- 
-	public interface PricesRepository extends JpaRepository<PricesEntity, PricesEntityId>{
 
-	@Query("SELECT p FROM PricesEntity p WHERE p.brandId = :brandId AND p.startDate <= :appTime AND p.endDate > :appTime AND p.productId = :productId order by p.priority desc")
-	List<PricesEntity> getPrices(@Param("appTime") LocalDateTime appTime, @Param("brandId") long brandId, @Param("productId") long productId);
+    @RequiredArgsConstructor
+    public class PricesService {
+        private final PricesRepository pricesRepository;
+        
+        public Optional<Prices> getPrices(LocalDateTime appTime, long brandId, long productId)  {
+    
+            List<Prices> pricesEntity = pricesRepository.getPrices(appTime, brandId, productId);
+    
+            return pricesEntity.stream().findFirst();
+        }
+    }
+```
 
-	}
+Durante todo el desarrollo se utiliza lombok lo cual ayuda en gran medida para obtener Clean Code.
 
+### Repository
+Interfaz definida en el módulo Domain (example-domain) en la que se define el acceso a la BBDD en este caso, o a cualquier otro medio al ser agnóstica a la implementación.
+
+
+ ```java
+    public interface PricesRepository {
+    
+        List<Prices> getPrices(LocalDateTime appTime, long brandId, long productId);
+    
+        List<Prices> findAll();
+    }
 ```
 
 

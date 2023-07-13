@@ -4,13 +4,14 @@ import com.inditex.example.domain.prices.Prices;
 import com.inditex.example.domain.prices.PricesRepository;
 import com.inditex.example.persistence.entity.mapper.PricesEntityMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Repository
+@Component
 public class PricesRepositoryImpl implements PricesRepository {
     private final PricesJpaRepository jpaRepository;
 
