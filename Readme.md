@@ -4,11 +4,11 @@
 Se trata de un pequeño microservicio para la consulta de Precios para una marca, producto y fecha determinados. Para ello se toma como base una tabla en una BBDD H2 en memoria autocargada con el arranque de la aplicacion
 
 ## Detalles
-La aplicación esta desarrollada usando Jva 17 + Spring como framework y usa un patrón MVC típico con:
+La aplicación esta desarrollada usando Java 17 + Spring como framework y usa un patrón de arquitectura hexagonal típico con las siguientes capas de dentro hacia afuera.
 
-  - Controller para la recepción de las petciones. En ellos solo se recibe la petición y se validan parámetros dejando la lógica de negocio para la capa Service.
-  - Service para la ejecución de la lógica de negocio usando componentes Repository.
-  - Repository como componente para la obtención de los datos solicitados.
+  - **Domain**: módulo maven inditex-domain en el que sólo se definen los objetos de negocio.
+  - **Application**: módulo maven inditex-application donde se define la lógica de negocio y en la que sólo se accede a los objetos de negocio de la capa Domain. No se hace referencia a ningún framework específico. 
+  - **Infraestructure**: módulo maven inditex-api  en el que se definen los accesos al medio (Web, BBDD, etc.) y se usa solo la logica de negocio de la capa Application. No se implementa ninguna lógica adicional.
   
 ## Ejecución
 Se podrá ejecutar usando maven. Es necesario que en el entorno esté configurado con JAVA_HOME java 17. Se deberá lanzar desde la carpeta de example-api.
